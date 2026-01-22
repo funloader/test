@@ -1,19 +1,21 @@
 pipeline {
     agent any
     stages {
-        stage('Cleanup Old Container') {
+        stage('Cleanup') {
             steps {
-                powershell 'if (docker ps -a -q -f "name=my-web-server") { docker stop my-web-server; docker rm my-web-server }'
+                // We use 'sh' now because Jenkins is in a Linux container
+                sh 'docker stop my-web-server || true'
+                sh 'docker rm my-web-server || true'
             }
         }
-        stage('Build Image') {
+        stage('Build') {
             steps {
-                powershell 'docker build -t my-nginx-web .'
+                sh 'docker build -t my-custom-nginx .'
             }
         }
         stage('Deploy') {
             steps {
-                powershell 'docker run -d --name my-web-server -p 8081:80 my-nginx-web'
+                sh 'docker run -d --name my-web-server -p 8090:80 my-custom-nginx'
             }
         }
     }
